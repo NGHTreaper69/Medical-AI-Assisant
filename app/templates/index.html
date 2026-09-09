@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Medical AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Medical AI Assistant</h1>
+                    <p class="subtitle">Ask questions about your documents</p>
+                </div>
+                <form method="get" action="{{ url_for('clear') }}" class="header-action">
+                    <button type="submit" class="btn-clear">Clear Chat</button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main class="chat-area">
+            <!-- Error Display -->
+            {% if error %}
+            <div class="error-banner">
+                <span class="error-icon">⚠</span>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- Chat Messages -->
+            <div class="messages-container">
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="message-wrapper message-{{ msg.role }}">
+                            <div class="message">
+                                <div class="message-badge">
+                                    {% if msg.role == "user" %}
+                                        You
+                                    {% else %}
+                                        AI
+                                    {% endif %}
+                                </div>
+                                <div class="message-content">
+                                    {{ msg.content | safe | nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <h2>Start a Conversation</h2>
+                        <p>Ask any medical question and I'll search through your documents to find the answer.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+
+        <!-- Input Area -->
+        <footer class="input-footer">
+            <form method="post" action="{{ url_for('index') }}" class="input-form">
+                <div class="input-wrapper">
+                    <textarea
+                        name="prompt"
+                        class="input-textarea"
+                        placeholder="Ask a medical question..."
+                        required
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" class="btn-send">
+                        <span>Send</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </footer>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom when page loads
+        function scrollToBottom() {
+            const messagesContainer = document.querySelector('.messages-container');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Auto-scroll on page load
+        window.addEventListener('load', scrollToBottom);
+
+        // Auto-expand textarea as user types
+        const textarea = document.querySelector('.input-textarea');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+    </script>
+</body>
+</html>
