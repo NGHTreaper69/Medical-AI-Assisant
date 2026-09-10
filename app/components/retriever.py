@@ -8,36 +8,38 @@ from langchain.chains import RetrievalQA
 logger = get_logger(__name__)
 
 CPT = """
-     Answer the following medical Question in 2-3 lines maximum using the information provided in the context.
+Answer the following medical question in 2-3 lines maximum using the information provided in the context.
 
-     Context:
-     {context}
+Context:
+{context}
 
-     Question:
-     {question}
+Question:
+{question}
 
-     Answer:
+Answer:
 """
 
 def set_custom_prompt():
     return PromptTemplate(
         template=CPT,
-        input_variables=["context","question"]
+        input_variables=["context", "question"]
     )
 
 def create_qa_chain():
     try:
-        logger.info("Loading vectorstore for context.")
-        db= load_vector_store()
+        logger.info("Loading vectorstore for context...")
+        db = load_vector_store()
 
         if db is None:
-            raise CustomException("vector store not present or empty.")
-        
+            raise CustomException("Vector store not present or empty.")
+
+        logger.info("Loading LLM model...")
         llm = load_llm()
 
         if llm is None:
-            raise CustomException("LLM not loaded..")
-        
+            raise CustomException("LLM failed to load.")
+
+        # Create retrieval QA chain
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
@@ -46,9 +48,10 @@ def create_qa_chain():
             chain_type_kwargs={'prompt': set_custom_prompt()}
         )
 
-        logger.info("Successfully created the QA chain")
+        logger.info("Successfully created the QA chain.")
         return qa_chain
+
     except Exception as e:
-        error_message = CustomException("failed to make QA chain.")
-        logger.error(str(error_message))
-        return None
+        error_message = f"Failed to create QA chain: {str(e)}"
+        logger.error(error_message)
+        raise CustomException(error_message)
