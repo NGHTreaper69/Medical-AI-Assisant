@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for
 from app.components.retriever import create_qa_chain
 from dotenv import load_dotenv
 from markupsafe import Markup
@@ -14,7 +14,7 @@ def nl2br(value):
 
 app.jinja_env.filters['nl2br'] = nl2br
 
-# --- IMPORTANT: Load the QA chain ONCE globally when the server boots ---
+# --- Load the QA chain ONCE globally when the server boots ---
 print("Initializing QA Chain... Please wait.")
 qa_chain = create_qa_chain()
 
@@ -40,7 +40,6 @@ def index():
                 if qa_chain is None:
                     raise Exception("QA Chain is not initialized. Check your Groq API key or vectorstore.")
                 
-                # Pass both key formats to satisfy RetrievalQA and custom PromptTemplate
                 response = qa_chain.invoke({
                     "query": user_input,
                     "question": user_input
@@ -62,6 +61,40 @@ def index():
         return redirect(url_for("index"))
 
     return render_template("index.html", messages=session.get("messages", []))
+
+# --- NEW: Asynchronous API endpoint for smooth chat interaction without page reloads ---
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    data = request.get_json()
+    user_input = data.get("prompt", "").strip()
+
+    if not user_input:
+        return jsonify({"error": "Prompt cannot be empty."}), 400
+
+    if "messages" not in session:
+        session["messages"] = []
+
+    messages = session["messages"]
+    messages.append({"role": "user", "content": user_input})
+
+    try:
+        if qa_chain is None:
+            raise Exception("QA Chain is not initialized properly.")
+
+        response = qa_chain.invoke({
+            "query": user_input,
+            "question": user_input
+        })
+
+        result = response.get("result", "No response generated.")
+
+        messages.append({"role": "assistant", "content": result})
+        session["messages"] = messages
+
+        return jsonify({"answer": result})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/clear")
 def clear():
