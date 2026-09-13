@@ -7,10 +7,10 @@ from langchain.chains import RetrievalQA
 
 logger = get_logger(__name__)
 
-# Standard RetrievalQA expects {context} and {question}
+# Prompt template: Encourages complete thoughts and flexible sentence limits to prevent cut-offs
 CPT = """
 You are Dr.Prompt, a helpful AI medical assistant. 
-Answer the following medical question clearly and concisely in 2-3 lines maximum.
+Answer the following medical question clearly and concisely in 2-4 sentences using complete thoughts. Never stop mid-sentence.
 
 Primary Context:
 {context}
@@ -21,6 +21,7 @@ Question:
 Instructions:
 1. Use the provided context to answer the question if the relevant information is present.
 2. If the context does not contain enough information to answer the question, use your general medical knowledge to provide an accurate response.
+3. Ensure your response always finishes with a complete sentence.
 
 Answer:
 """

@@ -13,7 +13,7 @@ def load_llm(model_name: str = "openai/gpt-oss-20b",groq_api_key: str = GROQ_API
             groq_api_key=groq_api_key,
             model_name=model_name,
             temperature= 0.7,
-            max_tokens=250,
+            max_tokens=512,
         )
         logger.info("LLM loaded successfully....")
         return llm
