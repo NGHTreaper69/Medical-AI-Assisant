@@ -14,7 +14,7 @@ def nl2br(value):
 
 app.jinja_env.filters['nl2br'] = nl2br
 
-# --- IMPORTANT FIX: Load the QA chain ONCE globally when the server boots ---
+# --- IMPORTANT: Load the QA chain ONCE globally when the server boots ---
 print("Initializing QA Chain... Please wait.")
 qa_chain = create_qa_chain()
 
@@ -40,8 +40,12 @@ def index():
                 if qa_chain is None:
                     raise Exception("QA Chain is not initialized. Check your Groq API key or vectorstore.")
                 
-                # Fast inference using the pre-loaded QA chain
-                response = qa_chain.invoke({"query": user_input})
+                # Pass both key formats to satisfy RetrievalQA and custom PromptTemplate
+                response = qa_chain.invoke({
+                    "query": user_input,
+                    "question": user_input
+                })
+                
                 result = response.get("result", "No response generated.")
 
                 messages.append({"role": "assistant", "content": result})

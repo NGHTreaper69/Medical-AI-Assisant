@@ -7,7 +7,7 @@ from langchain.chains import RetrievalQA
 
 logger = get_logger(__name__)
 
-# Prompt template: Uses retrieved context first, with a fallback to general knowledge
+# Standard RetrievalQA expects {context} and {question}
 CPT = """
 You are Dr.Prompt, a helpful AI medical assistant. 
 Answer the following medical question clearly and concisely in 2-3 lines maximum.
@@ -16,7 +16,7 @@ Primary Context:
 {context}
 
 Question:
-{query}
+{question}
 
 Instructions:
 1. Use the provided context to answer the question if the relevant information is present.
@@ -28,7 +28,7 @@ Answer:
 def set_custom_prompt():
     return PromptTemplate(
         template=CPT,
-        input_variables=["context", "query"]
+        input_variables=["context", "question"]
     )
 
 def create_qa_chain():
@@ -45,7 +45,7 @@ def create_qa_chain():
         if llm is None:
             raise CustomException("LLM failed to load.")
 
-        # Create RetrievalQA chain with k=4 retrieved chunks and custom prompt
+        # Create RetrievalQA chain
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
