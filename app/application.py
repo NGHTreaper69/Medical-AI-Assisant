@@ -101,6 +101,11 @@ def clear():
     session.pop("messages", None)
     return redirect(url_for("index"))
 
+# --- Lightweight Health Check Endpoint for Keep-Alive Pings ---
+@app.route("/health")
+def health():
+    return "OK", 200
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
